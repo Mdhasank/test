@@ -1,1 +1,20 @@
- This is a jenkins file
+pipeline {
+    agent any
+
+    stages {
+        stage('Test') {
+            steps {
+                echo 'Jenkins is working!'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}

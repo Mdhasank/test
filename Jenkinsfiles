@@ -24,3 +24,40 @@ pipeline {
         }
     }
 }
+
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Copy File to Remote EC2') {
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'ec2_ssh',        // Your stored SSH key ID
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
+                    )
+                ]) {
+                    sh '''
+                        echo "Copying file to EC2..."
+
+                        # Local file path on Jenkins server (change this if needed)
+                        LOCAL_FILE="/var/lib/jenkins/myfile.txt"
+
+                        # Remote path on EC2 instance
+                        REMOTE_PATH="/home/$SSH_USER/"
+
+                        # Copy the file using scp
+                        scp -i $SSH_KEY \
+                            -o StrictHostKeyChecking=no \
+                            $LOCAL_FILE $SSH_USER@13.233.247.189:$REMOTE_PATH
+
+                        echo "✅ File copied to EC2 successfully!"
+                    '''
+                }
+            }
+        }
+    }
+}
+

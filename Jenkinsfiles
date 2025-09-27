@@ -1,36 +1,37 @@
-
 pipeline {
     agent any
 
     stages {
-        stage('Copy File to Remote EC2') {
+        stage('Copy /text file to EC2') {
             steps {
                 withCredentials([
                     sshUserPrivateKey(
-                        credentialsId: 'ec2_ssh',        // Your stored SSH key ID
+                        credentialsId: 'ec2_ssh',
                         keyFileVariable: 'SSH_KEY',
                         usernameVariable: 'SSH_USER'
                     )
                 ]) {
                     sh '''
-                        echo "Copying file to EC2..."
+                        echo "✅ Checking if /text file exists on Jenkins VM..."
+                        LOCAL_FILE="/text"
 
-                        # Local file path on Jenkins server (change this if needed)
-                        LOCAL_FILE="/var/lib/jenkins/myfile.txt"
+                        if [ ! -f "$LOCAL_FILE" ]; then
+                            echo "❌ ERROR: File /text does not exist on Jenkins VM."
+                            exit 1
+                        fi
 
-                        # Remote path on EC2 instance
-                        REMOTE_PATH="/home/$SSH_USER/"
+                        echo "📤 Copying /text file to EC2 at /text..."
+                        scp -i $SSH_KEY -o StrictHostKeyChecking=no $LOCAL_FILE $SSH_USER@13.233.247.189:/tmp/text
 
-                        # Copy the file using scp
-                        scp -i $SSH_KEY \
-                            -o StrictHostKeyChecking=no \
-                            $LOCAL_FILE $SSH_USER@13.233.247.189:$REMOTE_PATH
-
-                        echo "✅ File copied to EC2 successfully!"
+                        echo "🔄 Moving file to root folder on EC2..."
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@13.233.247.189 '
+                            sudo mv /tmp/text /text
+                            sudo chown root:root /text
+                            echo "✅ File copied to /text on EC2!"
+                        '
                     '''
                 }
             }
         }
     }
 }
-

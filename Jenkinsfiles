@@ -1,15 +1,23 @@
-    pipeline {
+pipeline {
     agent any
 
     stages {
-        stage('Connect to Remote Server via SSH') {
+        stage('SSH to EC2') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: ec2_ssh', 
-                                                  keyFileVariable: 'SSH_KEY',
-                                                  usernameVariable: 'ec2-user')]) {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'ec2_ssh',         // Your Jenkins credential ID
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
+                    )
+                ]) {
                     sh '''
-                        echo "Connecting to remote server..."
-                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@your.remote.server "hostname && uptime"
+                        echo "Connecting to EC2 instance at 13.233.247.189..."
+
+                        ssh -i $SSH_KEY \
+                            -o StrictHostKeyChecking=no \
+                            $SSH_USER@13.233.247.189 \
+                            "echo '✅ Connected to EC2!'; hostname; uptime"
                     '''
                 }
             }

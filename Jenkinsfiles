@@ -1,20 +1,18 @@
-pipeline {
+    pipeline {
     agent any
 
     stages {
-        stage('Test') {
+        stage('Connect to Remote Server via SSH') {
             steps {
-                echo 'Jenkins is working!'
+                withCredentials([sshUserPrivateKey(credentialsId: ec2_ssh', 
+                                                  keyFileVariable: 'SSH_KEY',
+                                                  usernameVariable: 'ec2-user')]) {
+                    sh '''
+                        echo "Connecting to remote server..."
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no $SSH_USER@your.remote.server "hostname && uptime"
+                    '''
+                }
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-        failure {
-            echo 'Pipeline failed.'
         }
     }
 }
